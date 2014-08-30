@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/security
+    http://www.springframework.org/schema/security/spring-security.xsd">
+	
+	<!-- 확장자를 이용해 패턴을 걸때는 /**/*.해당 확장자 로 할 것(Ant Pattern 규칙) -->
+	<http pattern="/**/*.js" security="none"/>
+	<http pattern="/**/*.css" security="none"/>
+	<http pattern="/images/*" security="none"/>
+	
+	<http auto-config="true" use-expressions="true">
+		<!-- 
+		<intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<intercept-url pattern="/login.do" access="isAnonymous()" />
+		<intercept-url pattern="/main.do" access="permitAll" />
+		<intercept-url pattern="/**" access="permitAll"/>
+		-->
+		<form-login
+			username-parameter="loginid"
+			password-parameter="loginpwd" 
+			login-page="/login.do"
+			default-target-url="/main.do"
+			authentication-success-handler-ref="customAuthenticationSuccessHandler"
+			authentication-failure-handler-ref="customAuthenticationFailureHandler"
+		/>
+		<anonymous granted-authority="ANONYMOUS" />
+		<logout 
+			logout-success-url="/main.do"
+			delete-cookies="JSESSIONID"
+		/>
+		<access-denied-handler ref="accessDenied"/>
+		<custom-filter before="FILTER_SECURITY_INTERCEPTOR" ref="filterSecurityInterceptor"/>        
+	</http>
+	
+	<!-- 
+	<authentication-manager>
+		<authentication-provider>
+			<user-service>
+				<user name="user1" password="user1password" authorities="ROLE_USER"/>
+				<user name="admin1" password="admin1password" authorities="ROLE_ADMIN"/>
+			</user-service>
+		</authentication-provider>
+	</authentication-manager>
+	-->
+	
+	<authentication-manager>
+		<authentication-provider user-service-ref="customJdbcDaoImpl">
+			<password-encoder ref="bcryptPasswordEncoder" />
+		</authentication-provider>
+	</authentication-manager>
+	
+	<beans:bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<beans:property name="authenticationManager" ref="org.springframework.security.authenticationManager" />
+		<beans:property name="accessDecisionManager" ref="accessDecisionManager" />
+		<beans:property name="securityMetadataSource" ref="reloadableFilterInvocationSecurityMetadataSource" />
+	</beans:bean>
+	
+	<beans:bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+		<beans:constructor-arg>
+			<beans:list>
+				<beans:bean class="org.springframework.security.access.vote.RoleVoter">
+					<beans:property name="rolePrefix" value="" />
+				</beans:bean>
+			</beans:list>
+		</beans:constructor-arg>
+		<beans:property name="allowIfAllAbstainDecisions" value="false" />
+	</beans:bean>
+
+	<beans:bean id="customJdbcDaoImpl" class="com.terry.springsecurity.common.security.jdbc.CustomJdbcDaoImpl">
+		<beans:property name="dataSource" ref="logDataSource_pos" />
+		<beans:property name="rolePrefix" value="" />
+		<beans:property name="usersByUsernameQuery" value="SELECT ID, PASSWORD, NAME FROM MEMBERINFO WHERE ID=?" />
+		<beans:property name="authoritiesByUsernameQuery" value="SELECT ROLE_ID FROM MEMBER_ROLE WHERE ID=?" />
+		<beans:property name="groupAuthoritiesByUsernameQuery" value="SELECT B.AUTHORITY FROM GROUPS_MEMBER A, GROUPS_AUTHORITY B WHERE A.MEMBER_ID=? AND A.GROUP_ID = B.GROUP_ID" />
+		<beans:property name="enableGroups" value="true" />
+	</beans:bean>
+	
+	<beans:bean id="customAuthenticationSuccessHandler" class="com.terry.springsecurity.common.security.handler.CustomAuthenticationSuccessHandler">
+		<beans:property name="targetUrlParameter" value="loginRedirect" />
+		<beans:property name="useReferer" value="false" />
+		<beans:property name="defaultUrl" value="/main.do" />
+	</beans:bean>
+	
+	<beans:bean id="customAuthenticationFailureHandler" class="com.terry.springsecurity.common.security.handler.CustomAuthenticationFailureHandler">
+		<beans:property name="loginidname" value="loginid" />
+		<beans:property name="loginpasswdname" value="loginpwd" />
+		<beans:property name="loginredirectname" value="loginRedirect" />
+		<beans:property name="exceptionmsgname" value="securityexceptionmsg" />
+		<beans:property name="defaultFailureUrl" value="/login.do?fail=true" />
+	</beans:bean>
+	
+	<beans:bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+	
+	<beans:bean id="reloadableFilterInvocationSecurityMetadataSource" class="com.terry.springsecurity.common.security.ReloadableFilterInvocationSecurityMetadataSource">
+		<beans:constructor-arg ref="requestMap" />
+		<beans:property name="securedObjectService" ref="securedObjectService" />
+	</beans:bean>
+	
+	<beans:bean id="securedObjectService" class="com.terry.springsecurity.common.security.service.impl.SecuredObjectServiceImpl">
+		<beans:property name="secureObjectDao" ref="securedObjectDao" />
+	</beans:bean>
+	
+	<beans:bean id="securedObjectDao" class="com.terry.springsecurity.common.security.dao.SecuredObjectDao">
+		<beans:property name="dataSource" ref="logDataSource_pos" />
+		<beans:property name="sqlRolesAndUrl" value="
+			SELECT A.RESOURCE_PATTERN AS URL, B.AUTHORITY AS AUTHORITY 
+    		FROM SECURED_RESOURCES A, SECURED_RESOURCES_ROLE B 
+    		WHERE A.RESOURCE_ID = B.RESOURCE_ID 
+    		AND A.RESOURCE_TYPE = 'url' 
+    		ORDER BY A.SORT_ORDER
+    	" />
+	</beans:bean>
+	
+	<beans:bean id="requestMap" class="com.terry.springsecurity.common.security.UrlResourcesMapFactoryBean" init-method="init">
+		<beans:property name="securedObjectService" ref="securedObjectService" />
+	</beans:bean>
+	
+	<beans:bean id="accessDenied" class="com.terry.springsecurity.common.security.handler.CustomAccessDeniedHandler">
+		<beans:property name="errorPage" value="/common/access_denied2.do" />
+	</beans:bean>
+</beans:beans>

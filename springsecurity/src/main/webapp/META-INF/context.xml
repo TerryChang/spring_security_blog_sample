@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context antiJARLocking="true" antiResourceLocking="true">
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <!-- Connection Pool 설정 -->
+    <Resource
+            name="jdbc/mytest"
+            auth="Container"
+            type="javax.sql.DataSource"
+            factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+            maxActive="10"
+            minIdle="5"
+            maxWait="10000"
+            initialSize="5"
+            validationQuery="SELECT 1 FROM DUAL"
+            driverClassName="oracle.jdbc.driver.OracleDriver"
+            defaultAutoCommit="false"
+            username="springboard"
+            password="springboard"
+            url="jdbc:oracle:thin:@localhost:1521:orcl"/>
+</Context>

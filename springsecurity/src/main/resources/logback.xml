@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- configuration file for LogBack (slf4J implementation)
+See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-through-the-java-loggers/ -->
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <!-- To enable JMX Management -->
+    <jmxConfigurator/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="com.terry.springsecurity" level="debug" />
+    <logger name="org.springframework.security" level="debug" />
+    <logger name="org.springframework.context.support" level="debug" />
+    <logger name="org.springframework" level="info" />
+    
+    <!-- log4jdbc setting(turn on : info or debug, turn off : fatal -->
+    <logger name="jdbc.sqlonly" level="off" additivity="false"> 
+    	<appender-ref ref="console" /> 
+  	</logger> 
+  	<logger name="jdbc.sqltiming" level="info" additivity="false">
+  		<appender-ref ref="console" />
+  	</logger>
+  	<logger name="jdbc.audit" level="off" additivity="false" />  
+  	<logger name="jdbc.resultset" level="off" additivity="false" />   
+  	<logger name="jdbc.resultsettable" level="off" additivity="false" />   
+  	<logger name="jdbc.connection" level="off" additivity="false" />  
+    
+    <root level="info">
+    	<appender-ref ref="console" />
+    </root>
+    
+</configuration>
