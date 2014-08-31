@@ -74,7 +74,7 @@
 		<beans:property name="dataSource" ref="logDataSource_pos" />
 		<beans:property name="rolePrefix" value="" />
 		<beans:property name="usersByUsernameQuery" value="SELECT ID, PASSWORD, NAME FROM MEMBERINFO WHERE ID=?" />
-		<beans:property name="authoritiesByUsernameQuery" value="SELECT ROLE_ID FROM MEMBER_ROLE WHERE ID=?" />
+		<beans:property name="authoritiesByUsernameQuery" value="SELECT AUTHORITY FROM MEMBER_AUTHORITY WHERE ID=?" />
 		<beans:property name="groupAuthoritiesByUsernameQuery" value="SELECT B.AUTHORITY FROM GROUPS_MEMBER A, GROUPS_AUTHORITY B WHERE A.MEMBER_ID=? AND A.GROUP_ID = B.GROUP_ID" />
 		<beans:property name="enableGroups" value="true" />
 	</beans:bean>
@@ -108,7 +108,7 @@
 		<beans:property name="dataSource" ref="logDataSource_pos" />
 		<beans:property name="sqlRolesAndUrl" value="
 			SELECT A.RESOURCE_PATTERN AS URL, B.AUTHORITY AS AUTHORITY 
-    		FROM SECURED_RESOURCES A, SECURED_RESOURCES_ROLE B 
+    		FROM SECURED_RESOURCES A, SECURED_RESOURCES_AUTHORITY B 
     		WHERE A.RESOURCE_ID = B.RESOURCE_ID 
     		AND A.RESOURCE_TYPE = 'url' 
     		ORDER BY A.SORT_ORDER
@@ -122,4 +122,5 @@
 	<beans:bean id="accessDenied" class="com.terry.springsecurity.common.security.handler.CustomAccessDeniedHandler">
 		<beans:property name="errorPage" value="/common/access_denied2.do" />
 	</beans:bean>
+	
 </beans:beans>
