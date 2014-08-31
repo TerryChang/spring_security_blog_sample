@@ -27,3 +27,5 @@ Spring에서는 JNDI를 이용해서 접근하고 있다
 6. DB 테이블과 데이터 생성 쿼리는 src\main\webapp\WEB-INF\sql 디렉토리에 있는 table.sql과 data.sql이다.
 table.sql은 테이블과 primary key 생성 쿼리가, data.sql은 생성된 테이블에 데이터를 넣는 insert 쿼리이다.
 Oracle 쿼리이기 때문에 다른 DBMS를 사용할 경우 수정해야 할 수도 있음을 알린다
+
+7. 처음 초기 화면은 http://localhost:8080/main.do 이다.
