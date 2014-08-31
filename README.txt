@@ -23,3 +23,7 @@ Spring에서는 JNDI를 이용해서 접근하고 있다
 5. SQL Query 출력을 위해 log4jdbc-log4j2 라이브러리(https://code.google.com/p/log4jdbc-log4j2/)를 사용했다.
 이로 인해 Data Source 사용시 그냥 사용한 것이 아닌 log4jdbc-log4j2에서 제공하는 DataSource를 사용했다
 (src\main\webapp\WEB-INF\spring\root-context.xml 파일의 설정 내용을 보면 이해할 수 있다)
+
+6. DB 테이블과 데이터 생성 쿼리는 src\main\webapp\WEB-INF\sql 디렉토리에 있는 table.sql과 data.sql이다.
+table.sql은 테이블과 primary key 생성 쿼리가, data.sql은 생성된 테이블에 데이터를 넣는 insert 쿼리이다.
+Oracle 쿼리이기 때문에 다른 DBMS를 사용할 경우 수정해야 할 수도 있음을 알린다
